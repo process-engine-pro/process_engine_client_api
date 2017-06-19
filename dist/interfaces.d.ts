@@ -1,9 +1,9 @@
 import { ExecutionContext } from '@process-engine-js/core_contracts';
 import { IMessage } from '@process-engine-js/messagebus_contracts';
 export interface IProcessable {
-    handleUserTask(message: IMessage): any;
-    handleManualTask(message: IMessage): any;
-    handleEndEvent(message: IMessage): any;
+    handleUserTask(message: IMessage): void;
+    handleManualTask(message: IMessage): void;
+    handleEndEvent(message: IMessage): void;
 }
 export interface IProcessInstance {
     start(context?: ExecutionContext): Promise<IProcessInstance>;

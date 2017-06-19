@@ -4,7 +4,7 @@
     "registry": "https://www.npmjs.com"
   },
   "version": "1.0.0",
-  "description": "Connects to an ProcessEngine instance via MessageBus!",
+  "description": "Abstract communication with an instance of a ProcessEngineService via MessageBusService!",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
   "typings": "dist/index.d.ts",
