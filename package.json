@@ -1,0 +1,24 @@
+{
+  "name": "@process-engine-js/process_engine_client_api",
+  "publishConfig": {
+    "registry": "https://www.npmjs.com"
+  },
+  "version": "1.0.0",
+  "description": "Connects to an ProcessEngine instance via MessageBus!",
+  "license": "MIT",
+  "main": "dist/commonjs/index.js",
+  "typings": "dist/index.d.ts",
+  "contributors": [
+    "Sebastian Meier <sebastian.meier@5minds.de>",
+    "Patrick Pötschke <patrick.poetschke@quantusflow.com>",
+    "Simon Reymann <simon.reymann@quantusflow.com>"
+  ],
+  "dependencies": {
+    "@process-engine-js/core_contracts": "^1.0.42",
+    "@process-engine-js/messagebus_contracts": "^1.0.11"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "tsconfig": "^6.0.0"
+  }
+}
