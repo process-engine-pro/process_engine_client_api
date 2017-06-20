@@ -3,9 +3,9 @@ import {IMessage} from '@process-engine-js/messagebus_contracts';
 import {NodeDefEntity, UserTaskEntity} from '@process-engine-js/process_engine';
 
 export interface IProcessable {
-  handleUserTask(message: IMessage): void;
-  handleManualTask(message: IMessage): void;
-  handleEndEvent(message: IMessage): void;
+  handleUserTask(processKey: string, message: IMessage): void;
+  handleManualTask(processKey: string, message: IMessage): void;
+  handleEndEvent(processKey: string, message: IMessage): void;
 }
 
 export interface IProcessInstance {

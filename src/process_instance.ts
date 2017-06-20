@@ -81,13 +81,13 @@ export class ProcessInstance implements IProcessInstance {
 
         switch (message.data.action) {
           case 'userTask':
-            this.processable.handleUserTask(message);
+            this.processable.handleUserTask(this.processKey, message);
             break;
           case 'manualTask':
-            this.processable.handleManualTask(message);
+            this.processable.handleManualTask(this.processKey, message);
             break;
           case 'endEvent':
-            await this.processable.handleEndEvent(message);
+            await this.processable.handleEndEvent(this.processKey, message);
             await this.stop();
             break;
         }
