@@ -19,6 +19,7 @@
     "@process-engine-js/process_engine": "^1.0.40"
   },
   "devDependencies": {
+    "@process-engine-js/gulptraum": "^1.2.5",
     "gulp": "^3.9.1",
     "tsconfig": "^6.0.0"
   }
