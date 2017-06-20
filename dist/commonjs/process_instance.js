@@ -42,7 +42,6 @@ class ProcessInstance {
         this._taskChannelName = taskChannelName;
     }
     async start(context) {
-        // Build message for starting a process
         this._context = context;
         const msg = this.messageBusService.createDataMessage({
             action: 'start',
@@ -50,7 +49,6 @@ class ProcessInstance {
         }, this._context);
         this.messageBusService.publish('/processengine', msg);
         const participantChannelName = '/participant/' + msg.metadata.applicationId;
-        // subscribe to channel and forward to processable implementation in order to handle UserTasks/ManualTasks/EndEvents
         this._participantSubscription = await this.messageBusService.subscribe(participantChannelName, async (message) => {
             if (!this.processable) {
                 throw new Error('no processable defined to handle activities!');
