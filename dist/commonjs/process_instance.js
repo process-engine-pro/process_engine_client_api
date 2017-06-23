@@ -74,6 +74,9 @@ class ProcessInstance {
         return this;
     }
     async stop() {
+        this.nextTaskDef = null;
+        this.nextTaskEntity = null;
+        this.taskChannelName = null;
         await this._participantSubscription.cancel();
         return;
     }
