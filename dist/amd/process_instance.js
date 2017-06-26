@@ -48,6 +48,7 @@ define(["require", "exports"], function (require, exports) {
                 action: 'start',
                 key: this.processKey
             }, this._context);
+            this.messageBusService.publish('/processengine', msg);
             const participantChannelName = '/participant/' + msg.metadata.applicationId;
             this._participantSubscription = await this.messageBusService.subscribe(participantChannelName, async (message) => {
                 if (!this.processable) {
@@ -71,7 +72,6 @@ define(["require", "exports"], function (require, exports) {
                     }
                 }
             });
-            this.messageBusService.publish('/processengine', msg);
             return this;
         }
         async stop() {
