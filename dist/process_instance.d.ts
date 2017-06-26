@@ -1,7 +1,7 @@
 import { IMessageBusService } from '@process-engine-js/messagebus_contracts';
 import { IProcessable, IProcessInstance } from './interfaces';
 import { ExecutionContext } from '@process-engine-js/core_contracts';
-import { NodeDefEntity, UserTaskEntity } from '@process-engine-js/process_engine';
+import { INodeDefEntity, IUserTaskEntity } from '@process-engine-js/process_engine_contracts';
 export declare class ProcessInstance implements IProcessInstance {
     private _messageBusService;
     private _processKey;
@@ -15,8 +15,8 @@ export declare class ProcessInstance implements IProcessInstance {
     private readonly messageBusService;
     readonly processable: IProcessable;
     readonly processKey: string;
-    nextTaskDef: NodeDefEntity;
-    nextTaskEntity: UserTaskEntity;
+    nextTaskDef: INodeDefEntity;
+    nextTaskEntity: IUserTaskEntity;
     taskChannelName: string;
     start(context?: ExecutionContext): Promise<IProcessInstance>;
     stop(): Promise<void>;

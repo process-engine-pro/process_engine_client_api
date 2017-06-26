@@ -1,7 +1,7 @@
 import {IMessageBusService, IMessageSubscription} from '@process-engine-js/messagebus_contracts';
 import {IProcessable, IProcessInstance} from './interfaces';
 import {ExecutionContext} from '@process-engine-js/core_contracts';
-import {NodeDefEntity, UserTaskEntity} from '@process-engine-js/process_engine';
+import {INodeDefEntity, IUserTaskEntity} from '@process-engine-js/process_engine_contracts';
 
 export class ProcessInstance implements IProcessInstance {
   private _messageBusService: IMessageBusService = undefined;
@@ -9,8 +9,8 @@ export class ProcessInstance implements IProcessInstance {
   private _processable: IProcessable = undefined;
   private _participantSubscription: IMessageSubscription = undefined;
 
-  private _nextTaskDef: NodeDefEntity = undefined;
-  private _nextTaskEntity: UserTaskEntity = undefined;
+  private _nextTaskDef: INodeDefEntity = undefined;
+  private _nextTaskEntity: IUserTaskEntity = undefined;
   private _taskChannelName: string = undefined;
 
   private _context: ExecutionContext = undefined;
@@ -33,19 +33,19 @@ export class ProcessInstance implements IProcessInstance {
     return this._processKey;
   }
 
-  public get nextTaskDef(): NodeDefEntity {
+  public get nextTaskDef(): INodeDefEntity {
     return this._nextTaskDef;
   }
 
-  public set nextTaskDef(nextTaskDef: NodeDefEntity) {
+  public set nextTaskDef(nextTaskDef: INodeDefEntity) {
     this._nextTaskDef = nextTaskDef;
   }
 
-  public get nextTaskEntity(): UserTaskEntity {
+  public get nextTaskEntity(): IUserTaskEntity {
   return this._nextTaskEntity;
 }
 
-  public set nextTaskEntity(nextTaskEntity: UserTaskEntity) {
+  public set nextTaskEntity(nextTaskEntity: IUserTaskEntity) {
     this._nextTaskEntity = nextTaskEntity;
   }
 
