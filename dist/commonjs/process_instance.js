@@ -41,11 +41,12 @@ class ProcessInstance {
     set taskChannelName(taskChannelName) {
         this._taskChannelName = taskChannelName;
     }
-    async start(context) {
+    async start(token, context) {
         this._context = context;
         const msg = this.messageBusService.createDataMessage({
             action: 'start',
-            key: this.processKey
+            key: this.processKey,
+            token
         }, this._context);
         this.messageBusService.publish('/processengine', msg);
         const participantChannelName = '/participant/' + msg.metadata.applicationId;

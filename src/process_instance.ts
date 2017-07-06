@@ -57,13 +57,14 @@ export class ProcessInstance implements IProcessInstance {
     this._taskChannelName = taskChannelName;
   }
 
-  public async start(context?: ExecutionContext): Promise<IProcessInstance> {
+  public async start(token?: any, context?: ExecutionContext): Promise<IProcessInstance> {
     // Build message for starting a process
     this._context = context;
     const msg = this.messageBusService.createDataMessage(
       {
         action: 'start',
-        key: this.processKey
+        key: this.processKey,
+        token
       },
       this._context
     );

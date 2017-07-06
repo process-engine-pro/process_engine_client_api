@@ -6,5 +6,5 @@ export declare class ProcessEngineClientApi implements IProcessEngineClientApi {
     config: any;
     constructor(messageBusService: IMessageBusService);
     readonly messageBusService: IMessageBusService;
-    startProcess(processKey: string, processable: IProcessable, context?: ExecutionContext): Promise<IProcessInstance>;
+    startProcess(processKey: string, processable: IProcessable, token?: any, context?: ExecutionContext): Promise<IProcessInstance>;
 }
