@@ -18,7 +18,7 @@ export declare class ProcessInstance implements IProcessInstance {
     nextTaskDef: INodeDefEntity;
     nextTaskEntity: IUserTaskEntity;
     taskChannelName: string;
-    start(context?: ExecutionContext): Promise<IProcessInstance>;
+    start(token?: any, context?: ExecutionContext): Promise<IProcessInstance>;
     stop(): Promise<void>;
     restart(context?: ExecutionContext): Promise<void>;
     doCancel(): Promise<void>;

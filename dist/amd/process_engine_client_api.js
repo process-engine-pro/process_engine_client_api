@@ -10,9 +10,9 @@ define(["require", "exports", "./process_instance"], function (require, exports,
         get messageBusService() {
             return this._messageBusService;
         }
-        async startProcess(processKey, processable, context) {
+        async startProcess(processKey, processable, token, context) {
             const processInstance = new process_instance_1.ProcessInstance(processKey, this.messageBusService, processable);
-            await processInstance.start(context);
+            await processInstance.start(token, context);
             return processInstance;
         }
     }

@@ -57,13 +57,14 @@ export class ProcessInstance implements IProcessInstance {
     this._taskChannelName = taskChannelName;
   }
 
-  public async start(context?: ExecutionContext): Promise<IProcessInstance> {
+  public async start(token?: any, context?: ExecutionContext): Promise<IProcessInstance> {
     // Build message for starting a process
     this._context = context;
     const msg = this.messageBusService.createDataMessage(
       {
         action: 'start',
-        key: this.processKey
+        key: this.processKey,
+        token
       },
       this._context
     );
@@ -75,15 +76,19 @@ export class ProcessInstance implements IProcessInstance {
       if (!this.processable) {
         throw new Error('no processable defined to handle activities!');
       } else if (message && message.data && message.data.action) {
-        this.nextTaskDef = message.data.data.nodeDef;
-        this.nextTaskEntity = message.data.data;
-        this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
+        const setNewTask = (incomingTaskMessage) => {
+          this.nextTaskDef = incomingTaskMessage.data.data.nodeDef;
+          this.nextTaskEntity = incomingTaskMessage.data.data;
+          this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
+        };
 
         switch (message.data.action) {
           case 'userTask':
+            setNewTask(message);
             this.processable.handleUserTask(this.processKey, message);
             break;
           case 'manualTask':
+            setNewTask(message);
             this.processable.handleManualTask(this.processKey, message);
             break;
           case 'endEvent':

@@ -17,5 +17,5 @@ export interface IProcessInstance {
     doProceed(tokenData?: any): Promise<void>;
 }
 export interface IProcessEngineClientApi {
-    startProcess(processKey: string, processable: IProcessable, context?: ExecutionContext): Promise<IProcessInstance>;
+    startProcess(processKey: string, processable: IProcessable, token?: any, context?: ExecutionContext): Promise<IProcessInstance>;
 }

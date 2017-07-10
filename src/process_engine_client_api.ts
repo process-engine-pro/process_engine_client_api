@@ -16,10 +16,10 @@ export class ProcessEngineClientApi implements IProcessEngineClientApi {
     return this._messageBusService;
   }
 
-  public async startProcess(processKey: string, processable: IProcessable, context?: ExecutionContext): Promise<IProcessInstance> {
+  public async startProcess(processKey: string, processable: IProcessable, token?: any, context?: ExecutionContext): Promise<IProcessInstance> {
     const processInstance = new ProcessInstance(processKey, this.messageBusService, processable);
 
-    await processInstance.start(context);
+    await processInstance.start(token, context);
 
     return processInstance;
   }

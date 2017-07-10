@@ -41,11 +41,12 @@ class ProcessInstance {
     set taskChannelName(taskChannelName) {
         this._taskChannelName = taskChannelName;
     }
-    async start(context) {
+    async start(token, context) {
         this._context = context;
         const msg = this.messageBusService.createDataMessage({
             action: 'start',
-            key: this.processKey
+            key: this.processKey,
+            token
         }, this._context);
         this.messageBusService.publish('/processengine', msg);
         const participantChannelName = '/participant/' + msg.metadata.applicationId;
@@ -54,14 +55,18 @@ class ProcessInstance {
                 throw new Error('no processable defined to handle activities!');
             }
             else if (message && message.data && message.data.action) {
-                this.nextTaskDef = message.data.data.nodeDef;
-                this.nextTaskEntity = message.data.data;
-                this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
+                const setNewTask = (incomingTaskMessage) => {
+                    this.nextTaskDef = incomingTaskMessage.data.data.nodeDef;
+                    this.nextTaskEntity = incomingTaskMessage.data.data;
+                    this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
+                };
                 switch (message.data.action) {
                     case 'userTask':
+                        setNewTask(message);
                         this.processable.handleUserTask(this.processKey, message);
                         break;
                     case 'manualTask':
+                        setNewTask(message);
                         this.processable.handleManualTask(this.processKey, message);
                         break;
                     case 'endEvent':
