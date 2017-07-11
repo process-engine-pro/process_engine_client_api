@@ -13,9 +13,9 @@ export interface IProcessInstance {
     start(context?: ExecutionContext): Promise<IProcessInstance>;
     stop(): Promise<void>;
     restart(context?: ExecutionContext): Promise<void>;
-    doCancel(): Promise<void>;
-    doProceed(tokenData?: any): Promise<void>;
+    doCancel(context: ExecutionContext): Promise<void>;
+    doProceed(context: ExecutionContext, tokenData?: any): Promise<void>;
 }
 export interface IProcessEngineClientApi {
-    startProcess(processKey: string, processable: IProcessable, token?: any, context?: ExecutionContext): Promise<IProcessInstance>;
+    startProcess(processKey: string, processable: IProcessable, context: ExecutionContext, token?: any): Promise<IProcessInstance>;
 }

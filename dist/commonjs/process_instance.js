@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const uuid_1 = require("uuid");
+const uuid = require("uuid");
 class ProcessInstance {
     constructor(processKey, messageBusService, processable) {
         this._messageBusService = undefined;
@@ -15,7 +15,7 @@ class ProcessInstance {
         this._messageBusService = messageBusService;
         this._processKey = processKey;
         this._processable = processable;
-        this._participantId = uuid_1.default.v4();
+        this._participantId = uuid.v4();
     }
     get messageBusService() {
         return this._messageBusService;
@@ -49,12 +49,11 @@ class ProcessInstance {
     }
     async start(token, context) {
         // Build message for starting a process
-        this._context = context;
         const msg = this.messageBusService.createDataMessage({
             action: 'start',
             key: this.processKey,
             token
-        }, this._context, {
+        }, context, {
             participantId: this.participantId
         });
         this.messageBusService.publish('/processengine', msg);
@@ -101,20 +100,20 @@ class ProcessInstance {
         await this.start(context);
         return;
     }
-    async doCancel() {
+    async doCancel(context) {
         const msg = this.messageBusService.createDataMessage({
             action: 'cancel'
-        }, this._context, {
+        }, context, {
             participantId: this.participantId
         });
         await this.messageBusService.publish(this.taskChannelName, msg);
         return;
     }
-    async doProceed(tokenData) {
+    async doProceed(context, tokenData) {
         const msg = this.messageBusService.createDataMessage({
             action: 'proceed',
             token: tokenData
-        }, this._context, {
+        }, context, {
             participantId: this.participantId
         });
         await this.messageBusService.publish(this.taskChannelName, msg);

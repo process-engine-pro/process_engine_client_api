@@ -2,7 +2,7 @@ import {IMessageBusService, IMessageSubscription} from '@process-engine-js/messa
 import {IProcessable, IProcessInstance} from './interfaces';
 import {ExecutionContext} from '@process-engine-js/core_contracts';
 import {INodeDefEntity, IUserTaskEntity} from '@process-engine-js/process_engine_contracts';
-import uuid from 'uuid';
+import * as uuid from 'uuid';
 
 export class ProcessInstance implements IProcessInstance {
   private _messageBusService: IMessageBusService = undefined;
@@ -67,14 +67,13 @@ export class ProcessInstance implements IProcessInstance {
 
   public async start(token?: any, context?: ExecutionContext): Promise<IProcessInstance> {
     // Build message for starting a process
-    this._context = context;
     const msg = this.messageBusService.createDataMessage(
       {
         action: 'start',
         key: this.processKey,
         token
       },
-      this._context,
+      context,
       {
         participantId: this.participantId
       }
@@ -131,12 +130,12 @@ export class ProcessInstance implements IProcessInstance {
     return;
   }
 
-  public async doCancel(): Promise<void> {
+  public async doCancel(context: ExecutionContext): Promise<void> {
     const msg = this.messageBusService.createDataMessage(
       {
         action: 'cancel'
       },
-      this._context,
+      context,
       {
         participantId: this.participantId
       }
@@ -147,13 +146,13 @@ export class ProcessInstance implements IProcessInstance {
     return;
   }
 
-  public async doProceed(tokenData?: any): Promise<void> {
+  public async doProceed(context: ExecutionContext, tokenData?: any): Promise<void> {
     const msg = this.messageBusService.createDataMessage(
       {
         action: 'proceed',
         token: tokenData
       },
-      this._context,
+      context,
       {
         participantId: this.participantId
       }

@@ -23,6 +23,6 @@ export declare class ProcessInstance implements IProcessInstance {
     start(token?: any, context?: ExecutionContext): Promise<IProcessInstance>;
     stop(): Promise<void>;
     restart(context?: ExecutionContext): Promise<void>;
-    doCancel(): Promise<void>;
-    doProceed(tokenData?: any): Promise<void>;
+    doCancel(context: ExecutionContext): Promise<void>;
+    doProceed(context: ExecutionContext, tokenData?: any): Promise<void>;
 }
