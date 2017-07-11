@@ -2,6 +2,7 @@ import {IMessageBusService, IMessageSubscription} from '@process-engine-js/messa
 import {IProcessable, IProcessInstance} from './interfaces';
 import {ExecutionContext} from '@process-engine-js/core_contracts';
 import {INodeDefEntity, IUserTaskEntity} from '@process-engine-js/process_engine_contracts';
+import uuid from 'uuid';
 
 export class ProcessInstance implements IProcessInstance {
   private _messageBusService: IMessageBusService = undefined;
@@ -14,11 +15,14 @@ export class ProcessInstance implements IProcessInstance {
   private _taskChannelName: string = undefined;
 
   private _context: ExecutionContext = undefined;
+  private _participantId: string = undefined;
 
   constructor(processKey: string, messageBusService: IMessageBusService, processable: IProcessable) {
     this._messageBusService = messageBusService;
     this._processKey = processKey;
     this._processable = processable;
+
+    this._participantId = uuid.v4();
   }
 
   private get messageBusService(): IMessageBusService {
@@ -57,6 +61,10 @@ export class ProcessInstance implements IProcessInstance {
     this._taskChannelName = taskChannelName;
   }
 
+  public get participantId(): string {
+    return this._participantId;
+  }
+
   public async start(token?: any, context?: ExecutionContext): Promise<IProcessInstance> {
     // Build message for starting a process
     this._context = context;
@@ -66,10 +74,14 @@ export class ProcessInstance implements IProcessInstance {
         key: this.processKey,
         token
       },
-      this._context
+      this._context,
+      {
+        participantId: this.participantId
+      }
     );
     this.messageBusService.publish('/processengine', msg);
-    const participantChannelName = '/participant/' + msg.metadata.applicationId;
+    const participantChannelName = '/participant/' + this.participantId;
+    // const participantChannelName = '/participant/' + msg.metadata.applicationId;
 
     // subscribe to channel and forward to processable implementation in order to handle UserTasks/ManualTasks/EndEvents
     this._participantSubscription = await this.messageBusService.subscribe(participantChannelName, async (message) => {
@@ -124,7 +136,10 @@ export class ProcessInstance implements IProcessInstance {
       {
         action: 'cancel'
       },
-      this._context
+      this._context,
+      {
+        participantId: this.participantId
+      }
     );
 
     await this.messageBusService.publish(this.taskChannelName, msg);
@@ -138,7 +153,10 @@ export class ProcessInstance implements IProcessInstance {
         action: 'proceed',
         token: tokenData
       },
-      this._context
+      this._context,
+      {
+        participantId: this.participantId
+      }
     );
 
     await this.messageBusService.publish(this.taskChannelName, msg);

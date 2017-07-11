@@ -16,7 +16,8 @@
   "dependencies": {
     "@process-engine-js/core_contracts": "^1.0.42",
     "@process-engine-js/messagebus_contracts": "^1.0.11",
-    "@process-engine-js/process_engine_contracts": "^1.0.0"
+    "@process-engine-js/process_engine_contracts": "^1.0.0",
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "@process-engine-js/gulptraum": "^1.2.5",

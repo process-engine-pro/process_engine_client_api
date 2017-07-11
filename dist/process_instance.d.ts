@@ -11,6 +11,7 @@ export declare class ProcessInstance implements IProcessInstance {
     private _nextTaskEntity;
     private _taskChannelName;
     private _context;
+    private _participantId;
     constructor(processKey: string, messageBusService: IMessageBusService, processable: IProcessable);
     private readonly messageBusService;
     readonly processable: IProcessable;
@@ -18,6 +19,7 @@ export declare class ProcessInstance implements IProcessInstance {
     nextTaskDef: INodeDefEntity;
     nextTaskEntity: IUserTaskEntity;
     taskChannelName: string;
+    readonly participantId: string;
     start(token?: any, context?: ExecutionContext): Promise<IProcessInstance>;
     stop(): Promise<void>;
     restart(context?: ExecutionContext): Promise<void>;

@@ -1,4 +1,4 @@
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "uuid"], function (require, exports, uuid_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class ProcessInstance {
@@ -11,9 +11,11 @@ define(["require", "exports"], function (require, exports) {
             this._nextTaskEntity = undefined;
             this._taskChannelName = undefined;
             this._context = undefined;
+            this._participantId = undefined;
             this._messageBusService = messageBusService;
             this._processKey = processKey;
             this._processable = processable;
+            this._participantId = uuid_1.default.v4();
         }
         get messageBusService() {
             return this._messageBusService;
@@ -42,15 +44,23 @@ define(["require", "exports"], function (require, exports) {
         set taskChannelName(taskChannelName) {
             this._taskChannelName = taskChannelName;
         }
+        get participantId() {
+            return this._participantId;
+        }
         async start(token, context) {
+            // Build message for starting a process
             this._context = context;
             const msg = this.messageBusService.createDataMessage({
                 action: 'start',
                 key: this.processKey,
                 token
-            }, this._context);
+            }, this._context, {
+                participantId: this.participantId
+            });
             this.messageBusService.publish('/processengine', msg);
-            const participantChannelName = '/participant/' + msg.metadata.applicationId;
+            const participantChannelName = '/participant/' + this.participantId;
+            // const participantChannelName = '/participant/' + msg.metadata.applicationId;
+            // subscribe to channel and forward to processable implementation in order to handle UserTasks/ManualTasks/EndEvents
             this._participantSubscription = await this.messageBusService.subscribe(participantChannelName, async (message) => {
                 if (!this.processable) {
                     throw new Error('no processable defined to handle activities!');
@@ -94,7 +104,9 @@ define(["require", "exports"], function (require, exports) {
         async doCancel() {
             const msg = this.messageBusService.createDataMessage({
                 action: 'cancel'
-            }, this._context);
+            }, this._context, {
+                participantId: this.participantId
+            });
             await this.messageBusService.publish(this.taskChannelName, msg);
             return;
         }
@@ -102,7 +114,9 @@ define(["require", "exports"], function (require, exports) {
             const msg = this.messageBusService.createDataMessage({
                 action: 'proceed',
                 token: tokenData
-            }, this._context);
+            }, this._context, {
+                participantId: this.participantId
+            });
             await this.messageBusService.publish(this.taskChannelName, msg);
             return;
         }
