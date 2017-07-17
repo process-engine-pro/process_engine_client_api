@@ -14,7 +14,7 @@ export class ProcessInstance implements IProcessInstance {
   private _nextTaskEntity: IUserTaskEntity = undefined;
   private _taskChannelName: string = undefined;
 
-  private _context: ExecutionContext = undefined;
+  private _tokenData: any = undefined;
   private _participantId: string = undefined;
 
   constructor(processKey: string, messageBusService: IMessageBusService, processable: IProcessable) {
@@ -88,22 +88,32 @@ export class ProcessInstance implements IProcessInstance {
         throw new Error('no processable defined to handle activities!');
       } else if (message && message.data && message.data.action) {
         const setNewTask = (incomingTaskMessage) => {
-          this.nextTaskDef = incomingTaskMessage.data.data.nodeDef;
-          this.nextTaskEntity = incomingTaskMessage.data.data;
+          this.nextTaskDef = incomingTaskMessage.data.data.userTaskEntity.nodeDef;
+          this.nextTaskEntity = incomingTaskMessage.data.data.userTaskEntity;
           this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
         };
 
         switch (message.data.action) {
           case 'userTask':
             setNewTask(message);
-            this.processable.handleUserTask(this.processKey, message);
+            const uiName = message.data.data.uiName;
+            const uiConfig = message.data.data.uiConfig;
+            this._tokenData = message.data.data.uiData || {};
+
+            this.processable.handleUserTask(this, uiName, uiConfig, this._tokenData);
             break;
           case 'manualTask':
             setNewTask(message);
-            this.processable.handleManualTask(this.processKey, message);
+            const taskName = message.data.data.uiName;
+            const taskConfig = message.data.data.uiConfig;
+            this._tokenData = message.data.data.uiData || {};
+
+            this.processable.handleManualTask(this, taskName, taskConfig, this._tokenData);
             break;
           case 'endEvent':
-            await this.processable.handleEndEvent(this.processKey, message);
+            this._tokenData = message.data.data || {};
+
+            await this.processable.handleEndEvent(this, this._tokenData);
             await this.stop();
             break;
         }
@@ -146,11 +156,11 @@ export class ProcessInstance implements IProcessInstance {
     return;
   }
 
-  public async doProceed(context: ExecutionContext, tokenData?: any): Promise<void> {
+  public async doProceed(context: ExecutionContext): Promise<void> {
     const msg = this.messageBusService.createDataMessage(
       {
         action: 'proceed',
-        token: tokenData
+        token: this._tokenData
       },
       context,
       {

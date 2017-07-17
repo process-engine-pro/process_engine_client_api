@@ -1,3 +1,11 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 define(["require", "exports", "./process_instance"], function (require, exports, process_instance_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -10,10 +18,12 @@ define(["require", "exports", "./process_instance"], function (require, exports,
         get messageBusService() {
             return this._messageBusService;
         }
-        async startProcess(processKey, processable, context, token) {
-            const processInstance = new process_instance_1.ProcessInstance(processKey, this.messageBusService, processable);
-            await processInstance.start(token, context);
-            return processInstance;
+        startProcess(processKey, processable, context, token) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const processInstance = new process_instance_1.ProcessInstance(processKey, this.messageBusService, processable);
+                yield processInstance.start(token, context);
+                return processInstance;
+            });
         }
     }
     exports.ProcessEngineClientApi = ProcessEngineClientApi;

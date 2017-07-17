@@ -1,3 +1,11 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 define(["require", "exports", "uuid"], function (require, exports, uuid) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -10,7 +18,7 @@ define(["require", "exports", "uuid"], function (require, exports, uuid) {
             this._nextTaskDef = undefined;
             this._nextTaskEntity = undefined;
             this._taskChannelName = undefined;
-            this._context = undefined;
+            this._tokenData = undefined;
             this._participantId = undefined;
             this._messageBusService = messageBusService;
             this._processKey = processKey;
@@ -47,74 +55,94 @@ define(["require", "exports", "uuid"], function (require, exports, uuid) {
         get participantId() {
             return this._participantId;
         }
-        async start(token, context) {
-            const msg = this.messageBusService.createDataMessage({
-                action: 'start',
-                key: this.processKey,
-                token
-            }, context, {
-                participantId: this.participantId
-            });
-            this.messageBusService.publish('/processengine', msg);
-            const participantChannelName = '/participant/' + this.participantId;
-            this._participantSubscription = await this.messageBusService.subscribe(participantChannelName, async (message) => {
-                if (!this.processable) {
-                    throw new Error('no processable defined to handle activities!');
-                }
-                else if (message && message.data && message.data.action) {
-                    const setNewTask = (incomingTaskMessage) => {
-                        this.nextTaskDef = incomingTaskMessage.data.data.nodeDef;
-                        this.nextTaskEntity = incomingTaskMessage.data.data;
-                        this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
-                    };
-                    switch (message.data.action) {
-                        case 'userTask':
-                            setNewTask(message);
-                            this.processable.handleUserTask(this.processKey, message);
-                            break;
-                        case 'manualTask':
-                            setNewTask(message);
-                            this.processable.handleManualTask(this.processKey, message);
-                            break;
-                        case 'endEvent':
-                            await this.processable.handleEndEvent(this.processKey, message);
-                            await this.stop();
-                            break;
+        start(token, context) {
+            return __awaiter(this, void 0, void 0, function* () {
+                // Build message for starting a process
+                const msg = this.messageBusService.createDataMessage({
+                    action: 'start',
+                    key: this.processKey,
+                    token
+                }, context, {
+                    participantId: this.participantId
+                });
+                this.messageBusService.publish('/processengine', msg);
+                const participantChannelName = '/participant/' + this.participantId;
+                // const participantChannelName = '/participant/' + msg.metadata.applicationId;
+                // subscribe to channel and forward to processable implementation in order to handle UserTasks/ManualTasks/EndEvents
+                this._participantSubscription = yield this.messageBusService.subscribe(participantChannelName, (message) => __awaiter(this, void 0, void 0, function* () {
+                    if (!this.processable) {
+                        throw new Error('no processable defined to handle activities!');
                     }
-                }
+                    else if (message && message.data && message.data.action) {
+                        const setNewTask = (incomingTaskMessage) => {
+                            this.nextTaskDef = incomingTaskMessage.data.data.userTaskEntity.nodeDef;
+                            this.nextTaskEntity = incomingTaskMessage.data.data.userTaskEntity;
+                            this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
+                        };
+                        switch (message.data.action) {
+                            case 'userTask':
+                                setNewTask(message);
+                                const uiName = message.data.data.uiName;
+                                const uiConfig = message.data.data.uiConfig;
+                                this._tokenData = message.data.data.uiData || {};
+                                this.processable.handleUserTask(this, uiName, uiConfig, this._tokenData);
+                                break;
+                            case 'manualTask':
+                                setNewTask(message);
+                                const taskName = message.data.data.uiName;
+                                const taskConfig = message.data.data.uiConfig;
+                                this._tokenData = message.data.data.uiData || {};
+                                this.processable.handleManualTask(this, taskName, taskConfig, this._tokenData);
+                                break;
+                            case 'endEvent':
+                                this._tokenData = message.data.data || {};
+                                yield this.processable.handleEndEvent(this, this._tokenData);
+                                yield this.stop();
+                                break;
+                        }
+                    }
+                }));
+                return this;
             });
-            return this;
         }
-        async stop() {
-            this.nextTaskDef = null;
-            this.nextTaskEntity = null;
-            this.taskChannelName = null;
-            await this._participantSubscription.cancel();
-            return;
-        }
-        async restart(context) {
-            await this.stop();
-            await this.start(context);
-            return;
-        }
-        async doCancel(context) {
-            const msg = this.messageBusService.createDataMessage({
-                action: 'cancel'
-            }, context, {
-                participantId: this.participantId
+        stop() {
+            return __awaiter(this, void 0, void 0, function* () {
+                this.nextTaskDef = null;
+                this.nextTaskEntity = null;
+                this.taskChannelName = null;
+                yield this._participantSubscription.cancel();
+                return;
             });
-            await this.messageBusService.publish(this.taskChannelName, msg);
-            return;
         }
-        async doProceed(context, tokenData) {
-            const msg = this.messageBusService.createDataMessage({
-                action: 'proceed',
-                token: tokenData
-            }, context, {
-                participantId: this.participantId
+        restart(context) {
+            return __awaiter(this, void 0, void 0, function* () {
+                yield this.stop();
+                yield this.start(context);
+                return;
             });
-            await this.messageBusService.publish(this.taskChannelName, msg);
-            return;
+        }
+        doCancel(context) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const msg = this.messageBusService.createDataMessage({
+                    action: 'cancel'
+                }, context, {
+                    participantId: this.participantId
+                });
+                yield this.messageBusService.publish(this.taskChannelName, msg);
+                return;
+            });
+        }
+        doProceed(context) {
+            return __awaiter(this, void 0, void 0, function* () {
+                const msg = this.messageBusService.createDataMessage({
+                    action: 'proceed',
+                    token: this._tokenData
+                }, context, {
+                    participantId: this.participantId
+                });
+                yield this.messageBusService.publish(this.taskChannelName, msg);
+                return;
+            });
         }
     }
     exports.ProcessInstance = ProcessInstance;
