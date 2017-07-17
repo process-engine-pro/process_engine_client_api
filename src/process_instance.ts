@@ -1,7 +1,7 @@
 import {IMessageBusService, IMessageSubscription} from '@process-engine-js/messagebus_contracts';
 import {IProcessable, IProcessInstance} from './interfaces';
 import {ExecutionContext} from '@process-engine-js/core_contracts';
-import {INodeDefEntity, IUserTaskEntity} from '@process-engine-js/process_engine_contracts';
+import {INodeDefEntity, IUserTaskEntity, IUserTaskMessageData} from '@process-engine-js/process_engine_contracts';
 import * as uuid from 'uuid';
 
 export class ProcessInstance implements IProcessInstance {
@@ -14,7 +14,7 @@ export class ProcessInstance implements IProcessInstance {
   private _nextTaskEntity: IUserTaskEntity = undefined;
   private _taskChannelName: string = undefined;
 
-  private _context: ExecutionContext = undefined;
+  private _tokenData: any = undefined;
   private _participantId: string = undefined;
 
   constructor(processKey: string, messageBusService: IMessageBusService, processable: IProcessable) {
@@ -87,23 +87,37 @@ export class ProcessInstance implements IProcessInstance {
       if (!this.processable) {
         throw new Error('no processable defined to handle activities!');
       } else if (message && message.data && message.data.action) {
-        const setNewTask = (incomingTaskMessage) => {
-          this.nextTaskDef = incomingTaskMessage.data.data.nodeDef;
-          this.nextTaskEntity = incomingTaskMessage.data.data;
+        const setNewTask = (taskMessageData) => {
+          this.nextTaskDef = taskMessageData.userTaskEntity.nodeDef;
+          this.nextTaskEntity = taskMessageData.userTaskEntity;
           this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
         };
 
         switch (message.data.action) {
           case 'userTask':
-            setNewTask(message);
-            this.processable.handleUserTask(this.processKey, message);
+            const userTaskMessageData = (<IUserTaskMessageData> message.data.data);
+
+            setNewTask(userTaskMessageData);
+            const uiName = message.data.data.uiName;
+            const uiConfig = message.data.data.uiConfig;
+            this._tokenData = message.data.data.uiData || {};
+
+            this.processable.handleUserTask(this, uiName, uiConfig, this._tokenData);
             break;
           case 'manualTask':
-            setNewTask(message);
-            this.processable.handleManualTask(this.processKey, message);
+            const manualTaskMessageData = (<IUserTaskMessageData> message.data.data);
+
+            setNewTask(manualTaskMessageData);
+            const taskName = message.data.data.uiName;
+            const taskConfig = message.data.data.uiConfig;
+            this._tokenData = message.data.data.uiData || {};
+
+            this.processable.handleManualTask(this, taskName, taskConfig, this._tokenData);
             break;
           case 'endEvent':
-            await this.processable.handleEndEvent(this.processKey, message);
+            this._tokenData = message.data.data || {};
+
+            await this.processable.handleEndEvent(this, this._tokenData);
             await this.stop();
             break;
         }
@@ -117,6 +131,8 @@ export class ProcessInstance implements IProcessInstance {
     this.nextTaskDef = null;
     this.nextTaskEntity = null;
     this.taskChannelName = null;
+
+    this._tokenData = null;
 
     await this._participantSubscription.cancel();
 
@@ -146,11 +162,11 @@ export class ProcessInstance implements IProcessInstance {
     return;
   }
 
-  public async doProceed(context: ExecutionContext, tokenData?: any): Promise<void> {
+  public async doProceed(context: ExecutionContext): Promise<void> {
     const msg = this.messageBusService.createDataMessage(
       {
         action: 'proceed',
-        token: tokenData
+        token: this._tokenData
       },
       context,
       {

@@ -10,7 +10,7 @@ export declare class ProcessInstance implements IProcessInstance {
     private _nextTaskDef;
     private _nextTaskEntity;
     private _taskChannelName;
-    private _context;
+    private _tokenData;
     private _participantId;
     constructor(processKey: string, messageBusService: IMessageBusService, processable: IProcessable);
     private readonly messageBusService;
@@ -24,5 +24,5 @@ export declare class ProcessInstance implements IProcessInstance {
     stop(): Promise<void>;
     restart(context?: ExecutionContext): Promise<void>;
     doCancel(context: ExecutionContext): Promise<void>;
-    doProceed(context: ExecutionContext, tokenData?: any): Promise<void>;
+    doProceed(context: ExecutionContext): Promise<void>;
 }
