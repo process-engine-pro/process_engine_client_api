@@ -74,21 +74,23 @@ define(["require", "exports", "uuid"], function (require, exports, uuid) {
                         throw new Error('no processable defined to handle activities!');
                     }
                     else if (message && message.data && message.data.action) {
-                        const setNewTask = (incomingTaskMessage) => {
-                            this.nextTaskDef = incomingTaskMessage.data.data.userTaskEntity.nodeDef;
-                            this.nextTaskEntity = incomingTaskMessage.data.data.userTaskEntity;
+                        const setNewTask = (taskMessageData) => {
+                            this.nextTaskDef = taskMessageData.userTaskEntity.nodeDef;
+                            this.nextTaskEntity = taskMessageData.userTaskEntity;
                             this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
                         };
                         switch (message.data.action) {
                             case 'userTask':
-                                setNewTask(message);
+                                const userTaskMessageData = message.data.data;
+                                setNewTask(userTaskMessageData);
                                 const uiName = message.data.data.uiName;
                                 const uiConfig = message.data.data.uiConfig;
                                 this._tokenData = message.data.data.uiData || {};
                                 this.processable.handleUserTask(this, uiName, uiConfig, this._tokenData);
                                 break;
                             case 'manualTask':
-                                setNewTask(message);
+                                const manualTaskMessageData = message.data.data;
+                                setNewTask(manualTaskMessageData);
                                 const taskName = message.data.data.uiName;
                                 const taskConfig = message.data.data.uiConfig;
                                 this._tokenData = message.data.data.uiData || {};

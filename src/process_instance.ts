@@ -1,7 +1,7 @@
 import {IMessageBusService, IMessageSubscription} from '@process-engine-js/messagebus_contracts';
 import {IProcessable, IProcessInstance} from './interfaces';
 import {ExecutionContext} from '@process-engine-js/core_contracts';
-import {INodeDefEntity, IUserTaskEntity} from '@process-engine-js/process_engine_contracts';
+import {INodeDefEntity, IUserTaskEntity, IUserTaskMessageData} from '@process-engine-js/process_engine_contracts';
 import * as uuid from 'uuid';
 
 export class ProcessInstance implements IProcessInstance {
@@ -87,15 +87,17 @@ export class ProcessInstance implements IProcessInstance {
       if (!this.processable) {
         throw new Error('no processable defined to handle activities!');
       } else if (message && message.data && message.data.action) {
-        const setNewTask = (incomingTaskMessage) => {
-          this.nextTaskDef = incomingTaskMessage.data.data.userTaskEntity.nodeDef;
-          this.nextTaskEntity = incomingTaskMessage.data.data.userTaskEntity;
+        const setNewTask = (taskMessageData) => {
+          this.nextTaskDef = taskMessageData.userTaskEntity.nodeDef;
+          this.nextTaskEntity = taskMessageData.userTaskEntity;
           this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
         };
 
         switch (message.data.action) {
           case 'userTask':
-            setNewTask(message);
+            const userTaskMessageData = (<IUserTaskMessageData> message.data.data);
+
+            setNewTask(userTaskMessageData);
             const uiName = message.data.data.uiName;
             const uiConfig = message.data.data.uiConfig;
             this._tokenData = message.data.data.uiData || {};
@@ -103,7 +105,9 @@ export class ProcessInstance implements IProcessInstance {
             this.processable.handleUserTask(this, uiName, uiConfig, this._tokenData);
             break;
           case 'manualTask':
-            setNewTask(message);
+            const manualTaskMessageData = (<IUserTaskMessageData> message.data.data);
+
+            setNewTask(manualTaskMessageData);
             const taskName = message.data.data.uiName;
             const taskConfig = message.data.data.uiConfig;
             this._tokenData = message.data.data.uiData || {};
