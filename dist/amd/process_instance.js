@@ -112,6 +112,7 @@ define(["require", "exports", "uuid"], function (require, exports, uuid) {
                 this.nextTaskDef = null;
                 this.nextTaskEntity = null;
                 this.taskChannelName = null;
+                this._tokenData = null;
                 yield this._participantSubscription.cancel();
                 return;
             });

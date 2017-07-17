@@ -132,6 +132,8 @@ export class ProcessInstance implements IProcessInstance {
     this.nextTaskEntity = null;
     this.taskChannelName = null;
 
+    this._tokenData = null;
+
     await this._participantSubscription.cancel();
 
     return;
