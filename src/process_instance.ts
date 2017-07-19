@@ -25,7 +25,7 @@ export class ProcessInstance implements IProcessInstance {
     this._participantId = uuid.v4();
   }
 
-  private get messageBusService(): IMessageBusService {
+  public get messageBusService(): IMessageBusService {
     return this._messageBusService;
   }
 
@@ -101,7 +101,6 @@ export class ProcessInstance implements IProcessInstance {
             const uiName = message.data.data.uiName;
             const uiConfig = message.data.data.uiConfig;
             this._tokenData = message.data.data.uiData || {};
-
             this.processable.handleUserTask(this, uiName, uiConfig, this._tokenData);
             break;
           case 'manualTask':
