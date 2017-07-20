@@ -57,6 +57,7 @@ class ProcessInstance {
     }
     start(token, context) {
         return __awaiter(this, void 0, void 0, function* () {
+            // Build message for starting a process
             const msg = this.messageBusService.createDataMessage({
                 action: 'start',
                 key: this.processKey,
@@ -66,6 +67,8 @@ class ProcessInstance {
             });
             this.messageBusService.publish('/processengine', msg);
             const participantChannelName = '/participant/' + this.participantId;
+            // const participantChannelName = '/participant/' + msg.metadata.applicationId;
+            // subscribe to channel and forward to processable implementation in order to handle UserTasks/ManualTasks/EndEvents
             this._participantSubscription = yield this.messageBusService.subscribe(participantChannelName, (message) => __awaiter(this, void 0, void 0, function* () {
                 if (!this.processable) {
                     throw new Error('no processable defined to handle activities!');
