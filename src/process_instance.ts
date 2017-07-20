@@ -120,6 +120,13 @@ export class ProcessInstance implements IProcessInstance {
             await this.processable.handleEndEvent(this, this._tokenData);
             await this.stop();
             break;
+
+          case 'event':
+            this._tokenData = message.data.data || {};
+
+            await this.processable.handleEvent(this, this._tokenData);
+            await this.stop();
+            break;
         }
       }
     });
