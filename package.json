@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://www.npmjs.com"
   },
-  "version": "1.0.7",
+  "version": "1.0.8-0",
   "description": "Abstract communication with an instance of a ProcessEngineService via MessageBusService!",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
