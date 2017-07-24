@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://www.npmjs.com"
   },
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Abstract communication with an instance of a ProcessEngineService via MessageBusService!",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
@@ -14,7 +14,7 @@
     "Simon Reymann <simon.reymann@quantusflow.com>"
   ],
   "dependencies": {
-    "@process-engine-js/core_contracts": "^1.0.42",
+    "@process-engine-js/core_contracts": "^1.0.48-0",
     "@process-engine-js/messagebus_contracts": "^1.0.11",
     "@process-engine-js/process_engine_contracts": "^1.0.0",
     "uuid": "^3.1.0"

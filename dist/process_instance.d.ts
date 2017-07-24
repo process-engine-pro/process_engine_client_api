@@ -13,7 +13,7 @@ export declare class ProcessInstance implements IProcessInstance {
     private _tokenData;
     private _participantId;
     constructor(processKey: string, messageBusService: IMessageBusService, processable: IProcessable);
-    private readonly messageBusService;
+    readonly messageBusService: IMessageBusService;
     readonly processable: IProcessable;
     readonly processKey: string;
     nextTaskDef: INodeDefEntity;
