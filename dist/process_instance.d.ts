@@ -12,6 +12,8 @@ export declare class ProcessInstance implements IProcessInstance {
     private _taskChannelName;
     private _tokenData;
     private _participantId;
+    private _eventSubscription;
+    private _eventChannelName;
     constructor(processKey: string, messageBusService: IMessageBusService, processable: IProcessable);
     readonly messageBusService: IMessageBusService;
     readonly processable: IProcessable;
@@ -19,10 +21,13 @@ export declare class ProcessInstance implements IProcessInstance {
     nextTaskDef: INodeDefEntity;
     nextTaskEntity: IUserTaskEntity;
     taskChannelName: string;
+    readonly eventChannelName: string;
     readonly participantId: string;
-    start(token?: any, context?: ExecutionContext): Promise<IProcessInstance>;
+    start(context: ExecutionContext, token?: any): Promise<IProcessInstance>;
     stop(): Promise<void>;
-    restart(context?: ExecutionContext): Promise<void>;
+    restart(context: ExecutionContext, token?: any): Promise<void>;
     doCancel(context: ExecutionContext): Promise<void>;
+    doEvent(context: ExecutionContext, eventData?: any): Promise<void>;
+    doError(context: ExecutionContext, error: any): Promise<void>;
     doProceed(context: ExecutionContext): Promise<void>;
 }

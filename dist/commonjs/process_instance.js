@@ -20,6 +20,8 @@ class ProcessInstance {
         this._taskChannelName = undefined;
         this._tokenData = undefined;
         this._participantId = undefined;
+        this._eventSubscription = undefined;
+        this._eventChannelName = undefined;
         this._messageBusService = messageBusService;
         this._processKey = processKey;
         this._processable = processable;
@@ -52,10 +54,13 @@ class ProcessInstance {
     set taskChannelName(taskChannelName) {
         this._taskChannelName = taskChannelName;
     }
+    get eventChannelName() {
+        return this._eventChannelName;
+    }
     get participantId() {
         return this._participantId;
     }
-    start(token, context) {
+    start(context, token) {
         return __awaiter(this, void 0, void 0, function* () {
             const msg = this.messageBusService.createDataMessage({
                 action: 'start',
@@ -71,11 +76,28 @@ class ProcessInstance {
                     throw new Error('no processable defined to handle activities!');
                 }
                 else if (message && message.data && message.data.action) {
-                    const setNewTask = (taskMessageData) => {
+                    const setNewTask = (taskMessageData) => __awaiter(this, void 0, void 0, function* () {
                         this.nextTaskDef = taskMessageData.userTaskEntity.nodeDef;
                         this.nextTaskEntity = taskMessageData.userTaskEntity;
                         this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
-                    };
+                        this._eventChannelName = '/processengine_api/event/' + this.nextTaskEntity.id;
+                        this._eventSubscription = yield this.messageBusService.subscribe(this.eventChannelName, (message) => __awaiter(this, void 0, void 0, function* () {
+                            switch (message.data.action) {
+                                case 'event':
+                                    const eventType = message.data.eventType;
+                                    const eventData = message.data.data || {};
+                                    switch (eventType) {
+                                        case 'cancel':
+                                            yield this.stop();
+                                            yield this.processable.handleCancel(this);
+                                            break;
+                                        default:
+                                            yield this.processable.handleEvent(this, eventType, eventData);
+                                            break;
+                                    }
+                            }
+                        }));
+                    });
                     switch (message.data.action) {
                         case 'userTask':
                             const userTaskMessageData = message.data.data;
@@ -114,17 +136,45 @@ class ProcessInstance {
             return;
         });
     }
-    restart(context) {
+    restart(context, token) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.stop();
-            yield this.start(context);
+            yield this.start(context, token);
             return;
         });
     }
     doCancel(context) {
         return __awaiter(this, void 0, void 0, function* () {
             const msg = this.messageBusService.createDataMessage({
-                action: 'cancel'
+                action: 'event',
+                eventType: 'cancel',
+                data: this._tokenData
+            }, context, {
+                participantId: this.participantId
+            });
+            yield this.messageBusService.publish(this.taskChannelName, msg);
+            return;
+        });
+    }
+    doEvent(context, eventData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const msg = this.messageBusService.createDataMessage({
+                action: 'event',
+                eventType: 'data',
+                data: eventData
+            }, context, {
+                participantId: this.participantId
+            });
+            yield this.messageBusService.publish(this.taskChannelName, msg);
+            return;
+        });
+    }
+    doError(context, error) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const msg = this.messageBusService.createDataMessage({
+                action: 'event',
+                eventType: 'error',
+                data: error
             }, context, {
                 participantId: this.participantId
             });

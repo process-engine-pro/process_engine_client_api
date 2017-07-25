@@ -72,7 +72,7 @@ export class ProcessInstance implements IProcessInstance {
     return this._participantId;
   }
 
-  public async start(token?: any, context?: ExecutionContext): Promise<IProcessInstance> {
+  public async start(context: ExecutionContext, token?: any): Promise<IProcessInstance> {
     // Build message for starting a process
     const msg = this.messageBusService.createDataMessage(
       {
@@ -166,9 +166,9 @@ export class ProcessInstance implements IProcessInstance {
     return;
   }
 
-  public async restart(context?: ExecutionContext): Promise<void> {
+  public async restart(context: ExecutionContext, token?: any): Promise<void> {
     await this.stop();
-    await this.start(context);
+    await this.start(context, token);
 
     return;
   }
