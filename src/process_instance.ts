@@ -17,6 +17,9 @@ export class ProcessInstance implements IProcessInstance {
   private _tokenData: any = undefined;
   private _participantId: string = undefined;
 
+  private _eventSubscription: IMessageSubscription = undefined;
+  private _eventChannelName: string = undefined;
+
   constructor(processKey: string, messageBusService: IMessageBusService, processable: IProcessable) {
     this._messageBusService = messageBusService;
     this._processKey = processKey;
@@ -46,8 +49,8 @@ export class ProcessInstance implements IProcessInstance {
   }
 
   public get nextTaskEntity(): IUserTaskEntity {
-  return this._nextTaskEntity;
-}
+    return this._nextTaskEntity;
+  }
 
   public set nextTaskEntity(nextTaskEntity: IUserTaskEntity) {
     this._nextTaskEntity = nextTaskEntity;
@@ -59,6 +62,10 @@ export class ProcessInstance implements IProcessInstance {
 
   public set taskChannelName(taskChannelName: string) {
     this._taskChannelName = taskChannelName;
+  }
+
+  public get eventChannelName(): string {
+    return this._eventChannelName;
   }
 
   public get participantId(): string {
@@ -87,10 +94,31 @@ export class ProcessInstance implements IProcessInstance {
       if (!this.processable) {
         throw new Error('no processable defined to handle activities!');
       } else if (message && message.data && message.data.action) {
-        const setNewTask = (taskMessageData) => {
+        const setNewTask = async (taskMessageData) => {
           this.nextTaskDef = taskMessageData.userTaskEntity.nodeDef;
           this.nextTaskEntity = taskMessageData.userTaskEntity;
           this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
+
+          this._eventChannelName = '/processengine_api/event/' + this.nextTaskEntity.id;
+          this._eventSubscription = await this.messageBusService.subscribe(this.eventChannelName, async (message) => {
+            switch (message.data.action) {
+              case 'event':
+                const eventType = message.data.eventType;
+                const eventData = message.data.data || {};
+
+                switch (eventType) {
+                  case 'cancel':
+                    await this.stop();
+                    await this.processable.handleCancel(this);
+                    break;
+
+                  default:
+                    await this.processable.handleEvent(this, eventType, eventData);
+                    break;
+                }
+            }
+
+          });
         };
 
         switch (message.data.action) {
@@ -117,13 +145,6 @@ export class ProcessInstance implements IProcessInstance {
             this._tokenData = message.data.data || {};
 
             await this.processable.handleEndEvent(this, this._tokenData);
-            await this.stop();
-            break;
-
-          case 'event':
-            this._tokenData = message.data.data || {};
-
-            await this.processable.handleEvent(this, this._tokenData);
             await this.stop();
             break;
         }
@@ -155,7 +176,45 @@ export class ProcessInstance implements IProcessInstance {
   public async doCancel(context: ExecutionContext): Promise<void> {
     const msg = this.messageBusService.createDataMessage(
       {
-        action: 'cancel'
+        action: 'event',
+        eventType: 'cancel',
+        data: this._tokenData
+      },
+      context,
+      {
+        participantId: this.participantId
+      }
+    );
+
+    await this.messageBusService.publish(this.taskChannelName, msg);
+
+    return;
+  }
+
+  public async doEvent(context: ExecutionContext, eventData?: any): Promise<void> {
+    const msg = this.messageBusService.createDataMessage(
+      {
+        action: 'event',
+        eventType: 'data',
+        data: eventData
+      },
+      context,
+      {
+        participantId: this.participantId
+      }
+    );
+
+    await this.messageBusService.publish(this.taskChannelName, msg);
+
+    return;
+  }
+
+  public async doError(context: ExecutionContext, error: any): Promise<void> {
+    const msg = this.messageBusService.createDataMessage(
+      {
+        action: 'event',
+        eventType: 'error',
+        data: error
       },
       context,
       {

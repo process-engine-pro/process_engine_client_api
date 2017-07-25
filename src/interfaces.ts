@@ -1,12 +1,14 @@
 import {ExecutionContext} from '@process-engine-js/core_contracts';
 import {IMessage} from '@process-engine-js/messagebus_contracts';
-import {INodeDefEntity, IUserTaskEntity} from '@process-engine-js/process_engine_contracts';
+import {INodeDefEntity, IUserTaskEntity, IBoundaryEventEntity} from '@process-engine-js/process_engine_contracts';
 import {IMessageBusService} from '@process-engine-js/messagebus_contracts/src/interfaces';
 
 export interface IProcessable {
   handleUserTask(processInstance: IProcessInstance, uiName: string, uiConfig: any, uiData?: any): void;
   handleManualTask(processInstance: IProcessInstance, uiName: string, uiConfig: any, uiData?: any): void;
   handleEndEvent(processInstance: IProcessInstance, endEventData?: any): void;
+  handleEvent(processInstance: IProcessInstance, eventType: string, eventData?: any): void;
+  handleCancel(processInstance: IProcessInstance): void;
 }
 
 export interface IProcessInstance {
@@ -24,6 +26,8 @@ export interface IProcessInstance {
 
   doCancel(context: ExecutionContext): Promise<void>;
   doProceed(context: ExecutionContext): Promise<void>;
+  doError(context: ExecutionContext, error?: any): Promise<void>;
+  doEvent(context: ExecutionContext, eventData?: any): Promise<void>;
 }
 
 export interface IProcessEngineClientApi {
