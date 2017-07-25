@@ -20,9 +20,9 @@ export declare class ProcessInstance implements IProcessInstance {
     nextTaskEntity: IUserTaskEntity;
     taskChannelName: string;
     readonly participantId: string;
-    start(token?: any, context?: ExecutionContext): Promise<IProcessInstance>;
+    start(context: ExecutionContext, token?: any): Promise<IProcessInstance>;
     stop(): Promise<void>;
-    restart(context?: ExecutionContext): Promise<void>;
+    restart(context: ExecutionContext, token?: any): Promise<void>;
     doCancel(context: ExecutionContext): Promise<void>;
     doProceed(context: ExecutionContext): Promise<void>;
 }

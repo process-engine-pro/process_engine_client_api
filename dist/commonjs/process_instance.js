@@ -55,7 +55,7 @@ class ProcessInstance {
     get participantId() {
         return this._participantId;
     }
-    start(token, context) {
+    start(context, token) {
         return __awaiter(this, void 0, void 0, function* () {
             const msg = this.messageBusService.createDataMessage({
                 action: 'start',
@@ -114,10 +114,10 @@ class ProcessInstance {
             return;
         });
     }
-    restart(context) {
+    restart(context, token) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.stop();
-            yield this.start(context);
+            yield this.start(context, token);
             return;
         });
     }

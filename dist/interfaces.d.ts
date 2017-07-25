@@ -13,9 +13,9 @@ export interface IProcessInstance {
     nextTaskDef: INodeDefEntity;
     nextTaskEntity: IUserTaskEntity;
     taskChannelName: string;
-    start(context?: ExecutionContext): Promise<IProcessInstance>;
+    start(context: ExecutionContext, token?: any): Promise<IProcessInstance>;
     stop(): Promise<void>;
-    restart(context?: ExecutionContext): Promise<void>;
+    restart(context: ExecutionContext, token?: any): Promise<void>;
     doCancel(context: ExecutionContext): Promise<void>;
     doProceed(context: ExecutionContext): Promise<void>;
 }

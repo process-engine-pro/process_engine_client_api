@@ -21,7 +21,7 @@ define(["require", "exports", "./process_instance"], function (require, exports,
         startProcess(processKey, processable, context, token) {
             return __awaiter(this, void 0, void 0, function* () {
                 const processInstance = new process_instance_1.ProcessInstance(processKey, this.messageBusService, processable);
-                yield processInstance.start(token, context);
+                yield processInstance.start(context, token);
                 return processInstance;
             });
         }
