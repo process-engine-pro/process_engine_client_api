@@ -72,6 +72,10 @@ export class ProcessInstance implements IProcessInstance {
     return this._participantId;
   }
 
+  public get tokenData(): any {
+    return this._tokenData;
+  }
+
   public async start(context: ExecutionContext, token?: any): Promise<IProcessInstance> {
     // Build message for starting a process
     const msg = this.messageBusService.createDataMessage(
