@@ -23,6 +23,7 @@ export declare class ProcessInstance implements IProcessInstance {
     taskChannelName: string;
     readonly eventChannelName: string;
     readonly participantId: string;
+    readonly tokenData: any;
     start(context: ExecutionContext, token?: any): Promise<IProcessInstance>;
     stop(): Promise<void>;
     restart(context: ExecutionContext, token?: any): Promise<void>;

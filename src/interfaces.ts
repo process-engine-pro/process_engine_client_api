@@ -12,13 +12,16 @@ export interface IProcessable {
 }
 
 export interface IProcessInstance {
-  messageBusService: IMessageBusService;
-  processKey: string;
-  processable: IProcessable;
+  readonly messageBusService: IMessageBusService;
+  readonly processKey: string;
+  readonly processable: IProcessable;
+  readonly participantId: string;
+  readonly tokenData: any;
 
   nextTaskDef: INodeDefEntity;
   nextTaskEntity: IUserTaskEntity;
   taskChannelName: string;
+
 
   start(context: ExecutionContext, token?: any): Promise<IProcessInstance>;
   stop(): Promise<void>;

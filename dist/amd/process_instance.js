@@ -60,6 +60,9 @@ define(["require", "exports", "uuid"], function (require, exports, uuid) {
         get participantId() {
             return this._participantId;
         }
+        get tokenData() {
+            return this._tokenData;
+        }
         start(context, token) {
             return __awaiter(this, void 0, void 0, function* () {
                 const msg = this.messageBusService.createDataMessage({
