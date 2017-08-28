@@ -91,10 +91,10 @@ define(["require", "exports", "uuid"], function (require, exports, uuid) {
                                         const eventData = message.data.data || {};
                                         switch (eventType) {
                                             case 'cancel':
-                                                yield this.stop();
                                                 yield this.processable.handleCancel(this);
                                                 break;
                                             default:
+                                                this._tokenData.current = eventData;
                                                 yield this.processable.handleEvent(this, eventType, eventData);
                                                 break;
                                         }

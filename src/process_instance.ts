@@ -112,11 +112,11 @@ export class ProcessInstance implements IProcessInstance {
 
                 switch (eventType) {
                   case 'cancel':
-                    await this.stop();
                     await this.processable.handleCancel(this);
                     break;
 
                   default:
+                    this._tokenData.current = eventData;
                     await this.processable.handleEvent(this, eventType, eventData);
                     break;
                 }
