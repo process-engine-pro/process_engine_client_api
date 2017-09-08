@@ -1,7 +1,7 @@
 import {ExecutionContext} from '@process-engine-js/core_contracts';
 import {IMessage} from '@process-engine-js/messagebus_contracts';
-import {INodeDefEntity, IUserTaskEntity, IBoundaryEventEntity} from '@process-engine-js/process_engine_contracts';
 import {IMessageBusService} from '@process-engine-js/messagebus_contracts/src/interfaces';
+import {IBoundaryEventEntity, INodeDefEntity, IUserTaskEntity} from '@process-engine-js/process_engine_contracts';
 
 export interface IProcessable {
   handleUserTask(processInstance: IProcessInstance, uiName: string, uiConfig: any, uiData?: any): void;
@@ -21,7 +21,6 @@ export interface IProcessInstance {
   nextTaskDef: INodeDefEntity;
   nextTaskEntity: IUserTaskEntity;
   taskChannelName: string;
-
 
   start(context: ExecutionContext, token?: any): Promise<IProcessInstance>;
   stop(): Promise<void>;
