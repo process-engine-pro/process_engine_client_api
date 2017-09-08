@@ -16,7 +16,7 @@
   "dependencies": {
     "@process-engine-js/core_contracts": "^1.0.48-0",
     "@process-engine-js/messagebus_contracts": "^1.0.14",
-    "@process-engine-js/process_engine_contracts": "^1.0.26",
+    "@process-engine-js/process_engine_contracts": "^2.0.0",
     "uuid": "^3.1.0"
   },
   "devDependencies": {
