@@ -1,6 +1,6 @@
+import {ExecutionContext, IIamService} from '@process-engine-js/core_contracts';
 import {IMessageBusService} from '@process-engine-js/messagebus_contracts';
 import {IProcessable, IProcessEngineClientApi, IProcessInstance} from './interfaces';
-import {ExecutionContext, IIamService} from '@process-engine-js/core_contracts';
 import {ProcessInstance} from './process_instance';
 
 export class ProcessEngineClientApi implements IProcessEngineClientApi {

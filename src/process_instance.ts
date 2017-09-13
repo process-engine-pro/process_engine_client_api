@@ -1,8 +1,8 @@
-import {IMessageBusService, IMessageSubscription} from '@process-engine-js/messagebus_contracts';
-import {IProcessable, IProcessInstance} from './interfaces';
 import {ExecutionContext} from '@process-engine-js/core_contracts';
+import {IMessageBusService, IMessageSubscription} from '@process-engine-js/messagebus_contracts';
 import {INodeDefEntity, IUserTaskEntity, IUserTaskMessageData} from '@process-engine-js/process_engine_contracts';
 import * as uuid from 'uuid';
+import {IProcessable, IProcessInstance} from './interfaces';
 
 export class ProcessInstance implements IProcessInstance {
   private _messageBusService: IMessageBusService = undefined;
@@ -82,29 +82,29 @@ export class ProcessInstance implements IProcessInstance {
       {
         action: 'start',
         key: this.processKey,
-        token
+        token,
       },
       context,
       {
-        participantId: this.participantId
-      }
+        participantId: this.participantId,
+      },
     );
     this.messageBusService.publish('/processengine', msg);
     const participantChannelName = '/participant/' + this.participantId;
     // const participantChannelName = '/participant/' + msg.metadata.applicationId;
 
     // subscribe to channel and forward to processable implementation in order to handle UserTasks/ManualTasks/EndEvents
-    this._participantSubscription = await this.messageBusService.subscribe(participantChannelName, async (message) => {
+    this._participantSubscription = await this.messageBusService.subscribe(participantChannelName, async(message) => {
       if (!this.processable) {
         throw new Error('no processable defined to handle activities!');
       } else if (message && message.data && message.data.action) {
-        const setNewTask = async (taskMessageData) => {
+        const setNewTask = async(taskMessageData) => {
           this.nextTaskDef = taskMessageData.userTaskEntity.nodeDef;
           this.nextTaskEntity = taskMessageData.userTaskEntity;
           this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
 
           this._eventChannelName = '/processengine_api/event/' + this.nextTaskEntity.id;
-          this._eventSubscription = await this.messageBusService.subscribe(this.eventChannelName, async (message) => {
+          this._eventSubscription = await this.messageBusService.subscribe(this.eventChannelName, async(message) => {
             switch (message.data.action) {
               case 'event':
                 const eventType = message.data.eventType;
@@ -182,12 +182,12 @@ export class ProcessInstance implements IProcessInstance {
       {
         action: 'event',
         eventType: 'cancel',
-        data: this._tokenData
+        data: this._tokenData,
       },
       context,
       {
-        participantId: this.participantId
-      }
+        participantId: this.participantId,
+      },
     );
 
     await this.messageBusService.publish(this.taskChannelName, msg);
@@ -200,12 +200,12 @@ export class ProcessInstance implements IProcessInstance {
       {
         action: 'event',
         eventType: 'data',
-        data: eventData
+        data: eventData,
       },
       context,
       {
-        participantId: this.participantId
-      }
+        participantId: this.participantId,
+      },
     );
 
     await this.messageBusService.publish(this.taskChannelName, msg);
@@ -218,12 +218,12 @@ export class ProcessInstance implements IProcessInstance {
       {
         action: 'event',
         eventType: 'error',
-        data: error
+        data: error,
       },
       context,
       {
-        participantId: this.participantId
-      }
+        participantId: this.participantId,
+      },
     );
 
     await this.messageBusService.publish(this.taskChannelName, msg);
@@ -235,12 +235,12 @@ export class ProcessInstance implements IProcessInstance {
     const msg = this.messageBusService.createDataMessage(
       {
         action: 'proceed',
-        token: this._tokenData
+        token: this._tokenData,
       },
       context,
       {
-        participantId: this.participantId
-      }
+        participantId: this.participantId,
+      },
     );
 
     await this.messageBusService.publish(this.taskChannelName, msg);
