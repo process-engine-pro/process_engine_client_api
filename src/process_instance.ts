@@ -89,9 +89,10 @@ export class ProcessInstance implements IProcessInstance {
         participantId: this.participantId,
       },
     );
-    this.messageBusService.publish('/processengine', msg);
 
     await this._listenToParticipantChannel();
+
+    await this.messageBusService.publish('/processengine', msg);
 
     return this;
   }
@@ -120,9 +121,10 @@ export class ProcessInstance implements IProcessInstance {
         participantId: this.participantId,
       },
     );
-    this.messageBusService.publish('/processengine', msg);
 
     await this._listenToParticipantChannel();
+
+    await this.messageBusService.publish('/processengine', msg);
 
     return this;
   }
