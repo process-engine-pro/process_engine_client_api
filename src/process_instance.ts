@@ -1,9 +1,8 @@
-import {ExecutionContext} from '@process-engine-js/core_contracts';
+import {ExecutionContext, IPojoEntityReference, IPojoMetadata} from '@process-engine-js/core_contracts';
 import {IMessageBusService, IMessageSubscription} from '@process-engine-js/messagebus_contracts';
 import {INodeDefEntity, IUserTaskEntity, IUserTaskMessageData} from '@process-engine-js/process_engine_contracts';
 import * as uuid from 'uuid';
 import {IProcessable, IProcessInstance} from './interfaces';
-import {IPojoEntityReference, IPojoMetadata} from "../../core_contracts/src/interfaces";
 
 export class ProcessInstance implements IProcessInstance {
   private _messageBusService: IMessageBusService = undefined;
