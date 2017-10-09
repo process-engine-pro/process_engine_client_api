@@ -1,7 +1,7 @@
-import {ExecutionContext} from '@process-engine-js/core_contracts';
-import {IMessage} from '@process-engine-js/messagebus_contracts';
-import {IMessageBusService} from '@process-engine-js/messagebus_contracts/src/interfaces';
-import {IBoundaryEventEntity, INodeDefEntity, IUserTaskEntity} from '@process-engine-js/process_engine_contracts';
+import {ExecutionContext} from '@essential-projects/core_contracts';
+import {IMessage} from '@essential-projects/messagebus_contracts';
+import {IMessageBusService} from '@essential-projects/messagebus_contracts/src/interfaces';
+import {IBoundaryEventEntity, INodeDefEntity, IUserTaskEntity} from '@process-engine/process_engine_contracts';
 
 export interface IProcessable {
   handleUserTask(processInstance: IProcessInstance, uiName: string, uiConfig: any, uiData?: any): void;

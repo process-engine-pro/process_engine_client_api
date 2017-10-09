@@ -1,6 +1,6 @@
-import {ExecutionContext} from '@process-engine-js/core_contracts';
-import {IMessageBusService, IMessageSubscription} from '@process-engine-js/messagebus_contracts';
-import {INodeDefEntity, IUserTaskEntity, IUserTaskMessageData} from '@process-engine-js/process_engine_contracts';
+import {ExecutionContext} from '@essential-projects/core_contracts';
+import {IMessageBusService, IMessageSubscription} from '@essential-projects/messagebus_contracts';
+import {INodeDefEntity, IUserTaskEntity, IUserTaskMessageData} from '@process-engine/process_engine_contracts';
 import * as uuid from 'uuid';
 import {IProcessable, IProcessInstance} from './interfaces';
 
