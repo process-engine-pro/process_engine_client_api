@@ -1,5 +1,6 @@
-import {ExecutionContext, IIamService} from '@process-engine-js/core_contracts';
+import {ExecutionContext} from '@process-engine-js/core_contracts';
 import {IMessageBusService} from '@process-engine-js/messagebus_contracts';
+import {IUserTaskEntity} from '@process-engine-js/process_engine_contracts';
 import {IProcessable, IProcessEngineClientApi, IProcessInstance} from './interfaces';
 import {ProcessInstance} from './process_instance';
 
@@ -16,10 +17,24 @@ export class ProcessEngineClientApi implements IProcessEngineClientApi {
     return this._messageBusService;
   }
 
-  public async startProcess(processKey: string, processable: IProcessable, context: ExecutionContext, token?: any): Promise<IProcessInstance> {
+  public async startProcess(processKey: string,
+                            processable: IProcessable,
+                            context: ExecutionContext,
+                            token?: any): Promise<IProcessInstance> {
     const processInstance = new ProcessInstance(processKey, this.messageBusService, processable);
 
     await processInstance.start(context, token);
+
+    return processInstance;
+  }
+
+  public async continueProcess(processKey: string,
+                               processable: IProcessable,
+                               userTaskEntity: IUserTaskEntity,
+                               context: ExecutionContext): Promise<IProcessInstance> {
+    const processInstance = new ProcessInstance(processKey, this.messageBusService, processable);
+
+    await processInstance.continueProcess(userTaskEntity, context);
 
     return processInstance;
   }
