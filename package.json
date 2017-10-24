@@ -1,9 +1,9 @@
 {
-  "name": "@process-engine/process_engine_client_api",
+  "name": "@quantusflow/process_engine_client_api",
   "publishConfig": {
     "registry": "https://www.npmjs.com"
   },
-  "version": "0.1.1",
+  "version": "0.1.0",
   "description": "Abstract communication with an instance of a ProcessEngineService via MessageBusService!",
   "license": "MIT",
   "main": "dist/commonjs/index.js",

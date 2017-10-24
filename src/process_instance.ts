@@ -1,4 +1,4 @@
-import {ExecutionContext} from '@essential-projects/core_contracts';
+import {ExecutionContext, IPojoEntityReference, IPojoMetadata} from '@essential-projects/core_contracts';
 import {IMessageBusService, IMessageSubscription} from '@essential-projects/messagebus_contracts';
 import {INodeDefEntity, IUserTaskEntity, IUserTaskMessageData} from '@process-engine/process_engine_contracts';
 import * as uuid from 'uuid';
@@ -89,71 +89,42 @@ export class ProcessInstance implements IProcessInstance {
         participantId: this.participantId,
       },
     );
-    this.messageBusService.publish('/processengine', msg);
-    const participantChannelName = '/participant/' + this.participantId;
-    // const participantChannelName = '/participant/' + msg.metadata.applicationId;
 
-    // subscribe to channel and forward to processable implementation in order to handle UserTasks/ManualTasks/EndEvents
-    this._participantSubscription = await this.messageBusService.subscribe(participantChannelName, async(message) => {
-      if (!this.processable) {
-        throw new Error('no processable defined to handle activities!');
-      } else if (message && message.data && message.data.action) {
-        const setNewTask = async(taskMessageData) => {
-          this.nextTaskDef = taskMessageData.userTaskEntity.nodeDef;
-          this.nextTaskEntity = taskMessageData.userTaskEntity;
-          this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
+    await this._listenToParticipantChannel();
 
-          this._eventChannelName = '/processengine_api/event/' + this.nextTaskEntity.id;
-          this._eventSubscription = await this.messageBusService.subscribe(this.eventChannelName, async(message) => {
-            switch (message.data.action) {
-              case 'event':
-                const eventType = message.data.eventType;
-                const eventData = message.data.data || {};
+    await this.messageBusService.publish('/processengine', msg);
 
-                switch (eventType) {
-                  case 'cancel':
-                    await this.processable.handleCancel(this);
-                    break;
+    return this;
+  }
 
-                  default:
-                    this._tokenData.current = eventData;
-                    await this.processable.handleEvent(this, eventType, eventData);
-                    break;
-                }
-            }
+  public async continueProcess(userTaskEntity: IUserTaskEntity, context: ExecutionContext): Promise<IProcessInstance> {
+    // Build message for continuing a process
+    const meta: IPojoMetadata = {
+      isRef: true,
+      type: 'UserTask',
+      namespace: undefined,
+      isNew: false,
+    };
 
-          });
-        };
+    const data: IPojoEntityReference = {
+      id: userTaskEntity.id,
+      _meta: meta,
+    };
 
-        switch (message.data.action) {
-          case 'userTask':
-            const userTaskMessageData = (<IUserTaskMessageData> message.data.data);
+    const msg = this.messageBusService.createDataMessage(
+      {
+        action: 'continue',
+        nodeInstanceRef: data,
+      },
+      context,
+      {
+        participantId: this.participantId,
+      },
+    );
 
-            setNewTask(userTaskMessageData);
-            const uiName = message.data.data.uiName;
-            const uiConfig = message.data.data.uiConfig;
-            this._tokenData = message.data.data.uiData || {};
-            this.processable.handleUserTask(this, uiName, uiConfig, this._tokenData);
-            break;
-          case 'manualTask':
-            const manualTaskMessageData = (<IUserTaskMessageData> message.data.data);
+    await this._listenToParticipantChannel();
 
-            setNewTask(manualTaskMessageData);
-            const taskName = message.data.data.uiName;
-            const taskConfig = message.data.data.uiConfig;
-            this._tokenData = message.data.data.uiData || {};
-
-            this.processable.handleManualTask(this, taskName, taskConfig, this._tokenData);
-            break;
-          case 'endEvent':
-            this._tokenData = message.data.data || {};
-
-            await this.processable.handleEndEvent(this, this._tokenData);
-            await this.stop();
-            break;
-        }
-      }
-    });
+    await this.messageBusService.publish('/processengine', msg);
 
     return this;
   }
@@ -246,5 +217,74 @@ export class ProcessInstance implements IProcessInstance {
     await this.messageBusService.publish(this.taskChannelName, msg);
 
     return;
+  }
+
+  private async _listenToParticipantChannel(): Promise<void> {
+    const participantChannelName = '/participant/' + this.participantId;
+    // const participantChannelName = '/participant/' + msg.metadata.applicationId;
+
+    // subscribe to channel and forward to processable implementation in order to handle UserTasks/ManualTasks/EndEvents
+    this._participantSubscription = await this.messageBusService.subscribe(participantChannelName, async(message) => {
+      if (!this.processable) {
+        throw new Error('no processable defined to handle activities!');
+      } else if (message && message.data && message.data.action) {
+        await this._evaluateAction(message.data.action, <IUserTaskMessageData> message.data.data);
+      }
+    });
+  }
+
+  private async _evaluateAction(action: string, messageData: IUserTaskMessageData): Promise<void> {
+    if (action) {
+      switch (action) {
+        case 'userTask':
+          await this._setNewTask(messageData);
+          const uiName = messageData.uiName;
+          const uiConfig = messageData.uiConfig;
+          this._tokenData = messageData.uiData || {};
+
+          await this.processable.handleUserTask(this, uiName, uiConfig, this._tokenData);
+          break;
+        case 'manualTask':
+          await this._setNewTask(messageData);
+          const taskName = messageData.uiName;
+          const taskConfig = messageData.uiConfig;
+          this._tokenData = messageData.uiData || {};
+
+          await this.processable.handleManualTask(this, taskName, taskConfig, this._tokenData);
+          break;
+        case 'endEvent':
+          this._tokenData = messageData || {};
+
+          await this.processable.handleEndEvent(this, this._tokenData);
+          await this.stop();
+          break;
+      }
+    }
+  }
+
+  private async _setNewTask(taskMessageData: IUserTaskMessageData): Promise<void> {
+    this.nextTaskDef = taskMessageData.userTaskEntity.nodeDef;
+    this.nextTaskEntity = taskMessageData.userTaskEntity;
+    this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
+
+    this._eventChannelName = '/processengine_api/event/' + this.nextTaskEntity.id;
+    this._eventSubscription = await this.messageBusService.subscribe(this.eventChannelName, async (message) => {
+      switch (message.data.action) {
+        case 'event':
+          const eventType = message.data.eventType;
+          const eventData = message.data.data || {};
+
+          switch (eventType) {
+            case 'cancel':
+              await this.processable.handleCancel(this);
+              break;
+
+            default:
+              this._tokenData.current = eventData;
+              await this.processable.handleEvent(this, eventType, eventData);
+              break;
+          }
+      }
+    });
   }
 }

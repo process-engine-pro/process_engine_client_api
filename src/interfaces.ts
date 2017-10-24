@@ -22,6 +22,7 @@ export interface IProcessInstance {
   nextTaskEntity: IUserTaskEntity;
   taskChannelName: string;
 
+  continueProcess(userTaskEntity: IUserTaskEntity, context: ExecutionContext): Promise<IProcessInstance>;
   start(context: ExecutionContext, token?: any): Promise<IProcessInstance>;
   stop(): Promise<void>;
   restart(context: ExecutionContext, token?: any): Promise<void>;
@@ -34,4 +35,8 @@ export interface IProcessInstance {
 
 export interface IProcessEngineClientApi {
   startProcess(processKey: string, processable: IProcessable, context: ExecutionContext, token?: any): Promise<IProcessInstance>;
+  continueProcess(processKey: string,
+                  processable: IProcessable,
+                  userTaskEntity: IUserTaskEntity,
+                  context: ExecutionContext): Promise<IProcessInstance>;
 }
