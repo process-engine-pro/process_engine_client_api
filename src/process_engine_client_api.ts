@@ -21,7 +21,7 @@ export class ProcessEngineClientApi implements IProcessEngineClientApi {
                             processable: IProcessable,
                             context: ExecutionContext,
                             token?: any): Promise<IProcessInstance> {
-    const processInstance = new ProcessInstance(processKey, this.messageBusService, processable);
+    const processInstance: IProcessInstance = new ProcessInstance(processKey, this.messageBusService, processable);
 
     return processInstance.start(context, token);
   }
@@ -30,7 +30,7 @@ export class ProcessEngineClientApi implements IProcessEngineClientApi {
                                processable: IProcessable,
                                userTaskEntity: IUserTaskEntity,
                                context: ExecutionContext): Promise<IProcessInstance> {
-    const processInstance = new ProcessInstance(processKey, this.messageBusService, processable);
+    const processInstance: IProcessInstance = new ProcessInstance(processKey, this.messageBusService, processable);
 
     return processInstance.continueProcess(userTaskEntity, context);
   }

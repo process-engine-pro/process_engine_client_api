@@ -1,5 +1,9 @@
 import {ExecutionContext, IPojoEntityReference, IPojoMetadata} from '@essential-projects/core_contracts';
-import {IMessageBusService, IMessageSubscription} from '@essential-projects/messagebus_contracts';
+import {
+  IDataMessage,
+  IMessageBusService,
+  IMessageSubscription,
+} from '@essential-projects/messagebus_contracts';
 import {INodeDefEntity, IUserTaskEntity, IUserTaskMessageData} from '@process-engine/process_engine_contracts';
 import * as uuid from 'uuid';
 import {IProcessable, IProcessInstance} from './interfaces';
@@ -78,7 +82,7 @@ export class ProcessInstance implements IProcessInstance {
 
   public async start(context: ExecutionContext, token?: any): Promise<IProcessInstance> {
     // Build message for starting a process
-    const msg = this.messageBusService.createDataMessage(
+    const msg: IDataMessage = this.messageBusService.createDataMessage(
       {
         action: 'start',
         key: this.processKey,
@@ -111,7 +115,7 @@ export class ProcessInstance implements IProcessInstance {
       _meta: meta,
     };
 
-    const msg = this.messageBusService.createDataMessage(
+    const msg: IDataMessage = this.messageBusService.createDataMessage(
       {
         action: 'continue',
         nodeInstanceRef: data,
@@ -149,7 +153,7 @@ export class ProcessInstance implements IProcessInstance {
   }
 
   public async doCancel(context: ExecutionContext): Promise<void> {
-    const msg = this.messageBusService.createDataMessage(
+    const msg: IDataMessage = this.messageBusService.createDataMessage(
       {
         action: 'event',
         eventType: 'cancel',
@@ -167,7 +171,7 @@ export class ProcessInstance implements IProcessInstance {
   }
 
   public async doEvent(context: ExecutionContext, eventData?: any): Promise<void> {
-    const msg = this.messageBusService.createDataMessage(
+    const msg: IDataMessage = this.messageBusService.createDataMessage(
       {
         action: 'event',
         eventType: 'data',
@@ -185,7 +189,7 @@ export class ProcessInstance implements IProcessInstance {
   }
 
   public async doError(context: ExecutionContext, error: any): Promise<void> {
-    const msg = this.messageBusService.createDataMessage(
+    const msg: IDataMessage = this.messageBusService.createDataMessage(
       {
         action: 'event',
         eventType: 'error',
@@ -203,7 +207,7 @@ export class ProcessInstance implements IProcessInstance {
   }
 
   public async doProceed(context: ExecutionContext): Promise<void> {
-    const msg = this.messageBusService.createDataMessage(
+    const msg: IDataMessage = this.messageBusService.createDataMessage(
       {
         action: 'proceed',
         token: this._tokenData,
@@ -220,11 +224,11 @@ export class ProcessInstance implements IProcessInstance {
   }
 
   private async _listenToParticipantChannel(): Promise<void> {
-    const participantChannelName = '/participant/' + this.participantId;
+    const participantChannelName: string = `/participant/${this.participantId}`;
     // const participantChannelName = '/participant/' + msg.metadata.applicationId;
 
     // subscribe to channel and forward to processable implementation in order to handle UserTasks/ManualTasks/EndEvents
-    this._participantSubscription = await this.messageBusService.subscribe(participantChannelName, async(message) => {
+    this._participantSubscription = await this.messageBusService.subscribe(participantChannelName, async(message: IDataMessage) => {
       if (!this.processable) {
         throw new Error('no processable defined to handle activities!');
       } else if (message && message.data && message.data.action) {
@@ -238,16 +242,16 @@ export class ProcessInstance implements IProcessInstance {
       switch (action) {
         case 'userTask':
           await this._setNewTask(messageData);
-          const uiName = messageData.uiName;
-          const uiConfig = messageData.uiConfig;
+          const uiName: string = messageData.uiName;
+          const uiConfig: any = messageData.uiConfig;
           this._tokenData = messageData.uiData || {};
 
           await this.processable.handleUserTask(this, uiName, uiConfig, this._tokenData);
           break;
         case 'manualTask':
           await this._setNewTask(messageData);
-          const taskName = messageData.uiName;
-          const taskConfig = messageData.uiConfig;
+          const taskName: string = messageData.uiName;
+          const taskConfig: any = messageData.uiConfig;
           this._tokenData = messageData.uiData || {};
 
           await this.processable.handleManualTask(this, taskName, taskConfig, this._tokenData);
@@ -258,6 +262,8 @@ export class ProcessInstance implements IProcessInstance {
           await this.processable.handleEndEvent(this, this._tokenData);
           await this.stop();
           break;
+        default:
+          break;
       }
     }
   }
@@ -265,14 +271,14 @@ export class ProcessInstance implements IProcessInstance {
   private async _setNewTask(taskMessageData: IUserTaskMessageData): Promise<void> {
     this.nextTaskDef = taskMessageData.userTaskEntity.nodeDef;
     this.nextTaskEntity = taskMessageData.userTaskEntity;
-    this.taskChannelName = '/processengine/node/' + this.nextTaskEntity.id;
+    this.taskChannelName = `/processengine/node/${this.nextTaskEntity.id}`;
 
-    this._eventChannelName = '/processengine_api/event/' + this.nextTaskEntity.id;
-    this._eventSubscription = await this.messageBusService.subscribe(this.eventChannelName, async (message) => {
+    this._eventChannelName = `/processengine_api/event/${this.nextTaskEntity.id}`;
+    this._eventSubscription = await this.messageBusService.subscribe(this.eventChannelName, async(message: IDataMessage) => {
       switch (message.data.action) {
         case 'event':
-          const eventType = message.data.eventType;
-          const eventData = message.data.data || {};
+          const eventType: string = message.data.eventType;
+          const eventData: any = message.data.data || {};
 
           switch (eventType) {
             case 'cancel':
@@ -284,6 +290,8 @@ export class ProcessInstance implements IProcessInstance {
               await this.processable.handleEvent(this, eventType, eventData);
               break;
           }
+        default:
+          break;
       }
     });
   }
