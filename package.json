@@ -16,7 +16,7 @@
   "dependencies": {
     "@essential-projects/core_contracts": "^0.2.1",
     "@essential-projects/messagebus_contracts": "^0.1.0",
-    "@process-engine/process_engine_contracts": "^0.1.0",
+    "@process-engine/process_engine_contracts": "^0.3.1",
     "uuid": "^3.1.0"
   },
   "devDependencies": {
