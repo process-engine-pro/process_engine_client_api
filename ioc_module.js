@@ -1,6 +1,6 @@
 'use strict';
 
-const ProcessEngineClientApi = require('./dist/commonjs/index').ProcessEngineClientApi;
+var ProcessEngineClientApi = require('./dist/commonjs/index').ProcessEngineClientApi;
 
 function registerInContainer(container) {
 
